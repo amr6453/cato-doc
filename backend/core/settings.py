@@ -183,6 +183,7 @@ REST_AUTH = {
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_SECURE': False,
     'REGISTER_SERIALIZER': 'apps.accounts.serializers.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'apps.accounts.serializers.UserSerializer',
 }
 
 REST_AUTH_TOKEN_MODEL = None
