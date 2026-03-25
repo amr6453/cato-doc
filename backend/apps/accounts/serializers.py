@@ -4,9 +4,18 @@ from .models import CustomUser, DoctorProfile, PatientProfile
 from apps.clinics.serializers import SpecializationSerializer
 
 class UserSerializer(serializers.ModelSerializer):
+    has_profile = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'has_profile']
+
+    def get_has_profile(self, obj):
+        if obj.role == 'DOCTOR':
+            return hasattr(obj, 'doctor_profile')
+        if obj.role == 'PATIENT':
+            return hasattr(obj, 'patient_profile')
+        return True
 
 class DoctorProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -22,7 +31,14 @@ class DoctorProfileShortSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = DoctorProfile
-        fields = ['id', 'user_name', 'specialization_name', 'clinic_address']
+        fields = ['id', 'user_name', 'specialization_name', 'clinic_address', 'consultation_fee']
+
+class PatientProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = PatientProfile
+        fields = '__all__'
 
 class PatientProfileShortSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
@@ -32,21 +48,35 @@ class PatientProfileShortSerializer(serializers.ModelSerializer):
         fields = ['id', 'user_name']
 
 class CustomRegisterSerializer(RegisterSerializer):
-    first_name = serializers.CharField(required=False)
-    last_name = serializers.CharField(required=False)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
     role = serializers.ChoiceField(choices=CustomUser.ROLE_CHOICES, default=CustomUser.PATIENT)
 
     def get_cleaned_data(self):
         data = super().get_cleaned_data()
-        data['first_name'] = self.validated_data.get('first_name', '')
-        data['last_name'] = self.validated_data.get('last_name', '')
-        data['role'] = self.validated_data.get('role', CustomUser.PATIENT)
+        # Use getattr to avoid AttributeError if validated_data is not yet populated
+        val_data = getattr(self, 'validated_data', {})
+        data['first_name'] = val_data.get('first_name', '')
+        data['last_name'] = val_data.get('last_name', '')
+        data['phone_number'] = val_data.get('phone_number', '')
+        data['role'] = val_data.get('role', CustomUser.PATIENT)
         return data
 
     def save(self, request):
         user = super().save(request)
-        user.first_name = self.cleaned_data.get('first_name')
-        user.last_name = self.cleaned_data.get('last_name')
-        user.role = self.cleaned_data.get('role')
+        # Re-fetch the data to ensure we have the latest
+        val_data = getattr(self, 'validated_data', {})
+        user.first_name = val_data.get('first_name', user.first_name)
+        user.last_name = val_data.get('last_name', user.last_name)
+        user.role = val_data.get('role', user.role)
         user.save()
+        
+        # If it's a patient and we have a phone number, update the profile
+        phone = val_data.get('phone_number')
+        if user.role == CustomUser.PATIENT and phone:
+            patient_profile, _ = PatientProfile.objects.get_or_create(user=user)
+            patient_profile.phone_number = phone
+            patient_profile.save()
+            
         return user

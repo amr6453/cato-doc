@@ -19,11 +19,21 @@ class AvailabilityViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if hasattr(user, 'doctor_profile'):
-            return Availability.objects.filter(doctor=user.doctor_profile)
+            now = datetime.now()
+            from django.db.models import Q
+            return Availability.objects.filter(doctor=user.doctor_profile).filter(
+                Q(is_booked=True) | Q(date__gt=now.date()) | 
+                Q(date=now.date(), start_time__gt=now.time())
+            )
         return Availability.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(doctor=self.request.user.doctor_profile)
+
+    def perform_destroy(self, instance):
+        if instance.is_booked:
+            raise serializers.ValidationError("Cannot delete a booked availability slot.")
+        instance.delete()
 
     @action(detail=False, methods=['post'], url_path='bulk-create')
     def bulk_create(self, request):
@@ -65,6 +75,28 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
 
     def get_queryset(self):
         user = self.request.user
+        now = datetime.now()
+        
+        # Lazy cancellation of expired pending appointments
+        from django.db.models import Q
+        expired_q = Q(status='PENDING') & (
+            Q(date__lt=now.date()) | 
+            Q(date=now.date(), time_slot__lt=now.time())
+        )
+        expired_appointments = Appointment.objects.filter(expired_q)
+        
+        if expired_appointments.exists():
+            with transaction.atomic():
+                for appt in expired_appointments:
+                    appt.status = 'CANCELLED'
+                    appt.save()
+                    # Free the associated availability slot
+                    Availability.objects.filter(
+                        doctor=appt.doctor,
+                        date=appt.date,
+                        start_time=appt.time_slot
+                    ).update(is_booked=False)
+        
         if user.is_staff:
             return Appointment.objects.all()
         
@@ -79,6 +111,60 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
     def my_appointments(self, request):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='complete')
+    def complete(self, request, pk=None):
+        appointment = self.get_object()
+        
+        if appointment.status == 'COMPLETED':
+            return Response({"detail": "Appointment is already completed."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if appointment.status == 'CANCELLED':
+            return Response({"detail": "Cannot complete a cancelled appointment."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        appointment.status = 'COMPLETED'
+        appointment.save()
+            
+        serializer = self.get_serializer(appointment)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='confirm')
+    def confirm(self, request, pk=None):
+        appointment = self.get_object()
+        
+        if appointment.status != 'PENDING':
+            return Response({"detail": f"Cannot confirm appointment with status {appointment.status}."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        appointment.status = 'CONFIRMED'
+        appointment.save()
+            
+        serializer = self.get_serializer(appointment)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='cancel')
+    def cancel(self, request, pk=None):
+        appointment = self.get_object()
+        
+        if appointment.status == 'CANCELLED':
+            return Response({"detail": "Appointment is already cancelled."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        with transaction.atomic():
+            appointment.status = 'CANCELLED'
+            appointment.save()
+            
+            # Find and free the availability slot
+            slot = Availability.objects.filter(
+                doctor=appointment.doctor,
+                date=appointment.date,
+                start_time=appointment.time_slot
+            ).first()
+            
+            if slot:
+                slot.is_booked = False
+                slot.save()
+                
+        serializer = self.get_serializer(appointment)
         return Response(serializer.data)
 
     def perform_create(self, serializer):
@@ -112,17 +198,17 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
         old_status = instance.status
         new_status = serializer.validated_data.get('status')
 
-        # Cancellation logic
+        # Cancellation logic if status is changed via update
         if new_status == 'CANCELLED' and old_status != 'CANCELLED':
-            # Try to find the corresponding availability slot and free it
-            slot = Availability.objects.filter(
-                doctor=instance.doctor,
-                date=instance.date,
-                start_time=instance.time_slot
-            ).first()
-            
-            if slot:
-                slot.is_booked = False
-                slot.save()
+            with transaction.atomic():
+                slot = Availability.objects.filter(
+                    doctor=instance.doctor,
+                    date=instance.date,
+                    start_time=instance.time_slot
+                ).first()
+                
+                if slot:
+                    slot.is_booked = False
+                    slot.save()
 
         serializer.save()

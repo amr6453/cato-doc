@@ -23,7 +23,10 @@
 | `/api/doctors/{id}/availability/` | GET | None | `[{id, date, start_time, ...}]` | [DONE] |
 | `/api/appointments/my-appointments/` | GET | None | `[{id, doctor, patient, date, status}]` | [DONE] |
 | `/api/appointments/` | POST | `{doctor, date, time_slot}` | `{id, doctor, patient, date, status}` | [DONE] |
-| `/api/appointments/{id}/` | PATCH | `{status}` | `{id, doctor, patient, date, status}` | [DONE] |
+| `/api/appointments/{id}/cancel/` | PATCH | None | `{id, doctor, ...}` | [DONE] |
+| `/api/appointments/{id}/complete/` | PATCH | None | `{id, doctor, ...}` | [DONE] |
+| `/api/availabilities/` | GET/POST | `{date, start_time, ...}` | Slot object | [Ready] |
+| `/api/availabilities/bulk-create/` | POST | `{dates, start_times, duration_minutes}` | Success Msg | [Ready] |
 | `/api/schema/swagger-ui/` | GET | None | HTML (Documentation) | [Ready] |
 
 ## 3. Data Schema [Ready] 🗄️
@@ -67,11 +70,28 @@
 - `/doctors`: Doctors Listing with filters and grid view.
 - `/doctors/[id]`: Detailed Doctor profile and booking calendar.
 - `/dashboard/patient`: Patient Dashboard (My Appointments) | [DONE]
-- `/dashboard/doctor`: Doctor dashboard with daily schedule.
+- `/dashboard/doctor`: Doctor dashboard with daily schedule. | [DONE]
 - `/about`: About us page.
 - `/contact`: Contact us page with form.
 
 ## 4. Latest Changes Tracking 📝
+- **[2026-03-25] FULL-STACK**: Completed **Phase 2 Authentication & Security**. Implemented automatic profile completion redirects, role-based dashboard protection via `DashboardLayout`, and created the `CompleteProfile` page. [DONE]
+-- **What Changed:** 
+  - Completed **Phase 2: Authentication & Security**: Implemented profile completion redirects and protected dashboard routes.
+  - Upgraded **Patient Dashboard UI** to a premium, high-end design with smooth animations.
+  - Implemented comprehensive **Scheduling Logic Improvements** (Auto-cancellation, constraints, etc.).
+- **What's Next:** Phase 3 - Refinement (Cloudinary for images, specialized notifications, and final deployment prep).
+ [DONE]
+- **[2026-03-25] FRONTEND**: Upgraded **Patient Dashboard** with premium aesthetics, animations, and improved statistics layout to match the doctor's view. [DONE]
+- **[2026-03-25] FULL-STACK**: Implemented **Smart Scheduling Logic**. Restricted past date/time selection for both doctors and patients. Backend now auto-cancels expired PENDING appointments and filters out unbooked slots that have already passed. [DONE]
+- **[2026-03-25] SMART SCHEDULING**: Implemented...
+- **[2026-03-25] FRONTEND**: Fixed **Date Offset Bug** by implementing a local `formatDate` utility, solving the "previous day" selection issue in calendars. [DONE]
+- **[2026-03-25] FULL-STACK**: Implemented **Doctor Availability Management**. Doctors can now bulk-select dates and times via a premium calendar interface and manage their slots (List/Delete) directly from a dedicated schedule page. [DONE]
+- **[2026-03-25] FULL-STACK**: Implemented **Doctor Dashboard** featuring practice statistics (today's appointments, total revenue), a real-time "Today's Schedule", and processed appointment history. [DONE]
+- **[2026-03-25] BACKEND**: Added `PATCH /api/appointments/{id}/complete/` endpoint and updated serializers to include `consultation_fee` for revenue calculation. [DONE]
+- **[2026-03-25] BACKEND:** Implemented dedicated `/api/appointments/{id}/cancel/` endpoint to handle status updates and free up `Availability` slots. [DONE]
+- **[2026-03-25] FRONTEND:** Implemented **Optimistic UI** for appointment cancellation on the Patient Dashboard. [DONE]
+- **[2026-03-25] DOCS:** Comprehensive reformatting of `PRD.md`. Improved document structure, added a comparison table for endpoints, and cleaned up the tech stack and roadmap sections for better clarity and professional look. [DONE]
 - **[2026-03-25] BACKEND:** Fixed VS Code "Could not find import" error by creating `.vscode/settings.json` and pointing Pylance to the `backend\env` virtual environment. [DONE]
 - **[2026-03-19] AUTH:** Transitioned to **httpOnly Cookies** for JWT storage. Configured `dj-rest-auth` and `Axios` (`withCredentials: true`) to handle secure session persistence without `localStorage`. [Ready]
 - **[2026-03-19] AUTH:** Consolidated JWT authentication on Djoser endpoints (Previous). [Replaced by Cookie Auth]
