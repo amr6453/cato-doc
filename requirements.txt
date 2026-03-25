@@ -1,0 +1,24 @@
+# --- الأساسيات (Core) ---
+Django==5.0.3                # الإطار البرمجي الأساسي
+djangorestframework==3.15.1  # لتحويل Django لـ API احترافي
+django-cors-headers==4.3.1   # عشان الفرونت-إند يقدر يكلم الباك-إند بدون مشاكل أمنية
+
+# --- الحماية والـ Authentication (الدخول والخروج) ---
+django-allauth==0.61.1       # للتعامل مع حسابات التواصل الاجتماعي مستقبلاً
+dj-rest-auth==5.0.2          # بيوفر Endpoints جاهزة للـ Login/Logout
+djoser==2.2.2                # مكتبة عملاقة بتعمل الـ Registration والـ Password Reset في ثواني
+djangorestframework-simplejwt==5.3.1  # لإنتاج توكنز (JWT) آمنة جداً
+
+# --- قواعد البيانات والبيئة (Database & Env) ---
+python-dotenv==1.0.1         # لقراءة ملف الـ .env (عشان نحمي الباسوردات)
+psycopg2-binary==2.9.9       # لو قررت تستخدم PostgreSQL (الأفضل للمشاريع الطبية)
+Pillow==10.2.0               # عشان الـ Django يقدر يعالج صور الدكاترة والبروفايل
+
+# --- الشياكة والأداء (Optimization & Tools) ---
+drf-spectacular==0.27.1      # بيعملك صفحة (Swagger) فيها شرح لكل الـ APIs أوتوماتيك
+django-filter==24.2          # عشان المريض يقدر يفلتر الدكاترة حسب السعر أو التخصص
+django-extensions==3.2.3     # أدوات إضافية للمطورين بتسهل الشغل جداً
+
+# --- التعامل مع السيرفر (Production Ready) ---
+gunicorn==21.2.0             # سيرفر التشغيل الحقيقي (لما ترفع المشروع أونلاين)
+whitenoise==6.6.0            # لإدارة الملفات الثابتة (الصور والـ CSS) بكفاءة

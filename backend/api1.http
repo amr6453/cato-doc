@@ -1,0 +1,23 @@
+### Login with cato_admin (Verified)
+POST http://127.0.0.1:8000/api/djoser/jwt/create/
+Content-Type: application/json
+
+{
+    "username": "cato_admin",
+    "password": "cato_password123"
+}
+
+### Get Profile (Paste token from login below)
+GET http://127.0.0.1:8000/api/djoser/users/me/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzczOTQxNjQ3LCJpYXQiOjE3NzM5MzgwNDcsImp0aSI6ImMyM2UxMTcxNjNhMTQ5Y2RhMjQ3NmY0MjcyMzIxNTRjIiwidXNlcl9pZCI6IjMifQ.Ra7ouDB-bLDFsDkGgOl8kkFh65m8y6AEftLXr0jimcI
+
+
+### Register NEW User
+POST http://127.0.0.1:8000/api/djoser/users/
+Content-Type: application/json
+
+{
+    "username": "new_user_123",
+    "password": "password123@",
+    "email": "new@example.com"
+}
