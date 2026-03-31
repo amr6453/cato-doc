@@ -75,11 +75,9 @@
 - `/contact`: Contact us page with form.
 
 ## 4. Latest Changes Tracking 📝
-- **[2026-03-25] FULL-STACK**: Completed **Phase 2 Authentication & Security**. Implemented automatic profile completion redirects, role-based dashboard protection via `DashboardLayout`, and created the `CompleteProfile` page. [DONE]
--- **What Changed:** 
-  - Completed **Phase 2: Authentication & Security**: Implemented profile completion redirects and protected dashboard routes.
-  - Upgraded **Patient Dashboard UI** to a premium, high-end design with smooth animations.
-  - Implemented comprehensive **Scheduling Logic Improvements** (Auto-cancellation, constraints, etc.).
+- **[2026-03-31] PROFILE MANAGEMENT**: Implemented the modular `ProfileForm` component and a standalone `/settings` page. Synchronized TypeScript interfaces with the Backend's `ProfileUpdateSerializer`. Updated Dashboard settings for both Doctors and Patients to support real-time info updates and profile picture uploads via `FormData`. [DONE]
+- **[2026-03-29] SECURITY & PERMISSIONS**: Enforced strict **Object-Level Permissions** across the backend. Users can now ONLY access or modify their own data (Appointments, Availability, Profiles). Implemented a **"Red Team" Security Audit** script that verifies 403 Forbidden responses for unauthorized access attempts. Updated **Frontend UI** to hide sensitive action buttons (Cancel, Complete) based on `profile_id` ownership. [DONE]
+- **[2026-03-26] UI/UX REDESIGN**: Overhauled the entire dashboard experience. Introduced a responsive **Sidebar** unified across all "App" routes (Dashboards, Doctors), implemented a **Mobile Hamburger Menu**, and added User Profile/Logout management. [DONE]
 - **What's Next:** Phase 3 - Refinement (Cloudinary for images, specialized notifications, and final deployment prep).
  [DONE]
 - **[2026-03-25] FRONTEND**: Upgraded **Patient Dashboard** with premium aesthetics, animations, and improved statistics layout to match the doctor's view. [DONE]
@@ -132,3 +130,4 @@
 ## 6. Pending Conflicts/Issues ⚠️
 - Ensure the `AuthContext` in Next.js waits for Django's CSRF token if needed.
 - Verify consistent theme application across all newly created pages.
+- **Security Check:** Keep monitoring for any edge cases where `get_queryset` might expose data via non-detail actions.

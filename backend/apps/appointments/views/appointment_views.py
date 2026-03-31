@@ -1,83 +1,22 @@
 from django.db import transaction
-from datetime import datetime, timedelta
-from rest_framework import viewsets, mixins, serializers, status, permissions
+from datetime import datetime
+from rest_framework import viewsets, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Appointment, Availability
-from .serializers import AppointmentSerializer, AvailabilitySerializer, BulkAvailabilitySerializer
-
-class IsDoctor(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'DOCTOR'
-
-class AvailabilityViewSet(viewsets.ModelViewSet):
-    queryset = Availability.objects.all()
-    serializer_class = AvailabilitySerializer
-    permission_classes = [IsAuthenticated, IsDoctor]
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'doctor_profile'):
-            now = datetime.now()
-            from django.db.models import Q
-            return Availability.objects.filter(doctor=user.doctor_profile).filter(
-                Q(is_booked=True) | Q(date__gt=now.date()) | 
-                Q(date=now.date(), start_time__gt=now.time())
-            )
-        return Availability.objects.none()
-
-    def perform_create(self, serializer):
-        serializer.save(doctor=self.request.user.doctor_profile)
-
-    def perform_destroy(self, instance):
-        if instance.is_booked:
-            raise serializers.ValidationError("Cannot delete a booked availability slot.")
-        instance.delete()
-
-    @action(detail=False, methods=['post'], url_path='bulk-create')
-    def bulk_create(self, request):
-        serializer = BulkAvailabilitySerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        dates = serializer.validated_data['dates']
-        start_times = serializer.validated_data['start_times']
-        duration = serializer.validated_data['duration_minutes']
-        
-        doctor_profile = request.user.doctor_profile
-        new_slots = []
-        
-        with transaction.atomic():
-            for date in dates:
-                for start_time in start_times:
-                    # Basic overlap check: exact same start time
-                    if Availability.objects.filter(doctor=doctor_profile, date=date, start_time=start_time).exists():
-                        continue
-                        
-                    end_dt = datetime.combine(date, start_time) + timedelta(minutes=duration)
-                    
-                    new_slots.append(Availability(
-                        doctor=doctor_profile,
-                        date=date,
-                        start_time=start_time,
-                        end_time=end_dt.time(),
-                        is_booked=False
-                    ))
-            
-            Availability.objects.bulk_create(new_slots)
-            
-        return Response({"message": f"Successfully created {len(new_slots)} slots."}, status=status.HTTP_201_CREATED)
+from ..models import Appointment, Availability
+from ..serializers import AppointmentSerializer
+from ..permissions import IsOwnerOrReadOnly, IsAppointmentParticipant
 
 class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAppointmentParticipant, IsOwnerOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
         now = datetime.now()
         
-        # Lazy cancellation of expired pending appointments
         from django.db.models import Q
         expired_q = Q(status='PENDING') & (
             Q(date__lt=now.date()) | 
@@ -90,14 +29,13 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
                 for appt in expired_appointments:
                     appt.status = 'CANCELLED'
                     appt.save()
-                    # Free the associated availability slot
                     Availability.objects.filter(
                         doctor=appt.doctor,
                         date=appt.date,
                         start_time=appt.time_slot
                     ).update(is_booked=False)
         
-        if user.is_staff:
+        if self.action in ['retrieve', 'update', 'partial_update', 'destroy', 'cancel', 'confirm', 'complete'] or user.is_staff:
             return Appointment.objects.all()
         
         if hasattr(user, 'patient_profile'):
@@ -153,7 +91,6 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
             appointment.status = 'CANCELLED'
             appointment.save()
             
-            # Find and free the availability slot
             slot = Availability.objects.filter(
                 doctor=appointment.doctor,
                 date=appointment.date,
@@ -177,6 +114,10 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
         date = serializer.validated_data['date']
         time_slot = serializer.validated_data['time_slot']
         
+        now = datetime.now()
+        if date < now.date() or (date == now.date() and time_slot <= now.time()):
+            raise serializers.ValidationError({"time_slot": "Cannot book an appointment in the past."})
+        
         with transaction.atomic():
             slot = Availability.objects.select_for_update().filter(
                 doctor=doctor, 
@@ -198,7 +139,6 @@ class AppointmentViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.
         old_status = instance.status
         new_status = serializer.validated_data.get('status')
 
-        # Cancellation logic if status is changed via update
         if new_status == 'CANCELLED' and old_status != 'CANCELLED':
             with transaction.atomic():
                 slot = Availability.objects.filter(

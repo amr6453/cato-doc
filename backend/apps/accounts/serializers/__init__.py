@@ -1,0 +1,3 @@
+from .auth_serializers import UserSerializer, CustomRegisterSerializer, ProfileUpdateSerializer
+from .doctor_serializers import DoctorProfileSerializer, DoctorProfileShortSerializer
+from .patient_serializers import PatientProfileSerializer, PatientProfileShortSerializer

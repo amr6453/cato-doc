@@ -4,7 +4,6 @@ from .views import AppointmentViewSet, AvailabilityViewSet
 
 router = DefaultRouter()
 router.register(r'appointments', AppointmentViewSet, basename='appointment')
-router.register(r'availabilities', AvailabilityViewSet, basename='availability')
 
 urlpatterns = [
     path('', include(router.urls)),

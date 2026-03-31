@@ -1,0 +1,2 @@
+from .appointment_views import AppointmentViewSet
+from .availability_views import AvailabilityViewSet
