@@ -61,3 +61,9 @@ class ProfileUpdateSerializer(serializers.Serializer):
     bio = serializers.CharField(required=False, allow_blank=True)
     phone_number = serializers.CharField(required=False, allow_blank=True)
     image = serializers.ImageField(required=False, allow_null=True)
+
+    def validate_image(self, value):
+        if value:
+            if value.size > 2 * 1024 * 1024:
+                raise serializers.ValidationError("Image size must be less than 2MB")
+        return value

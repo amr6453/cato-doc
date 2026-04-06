@@ -12,6 +12,7 @@
 - **Auth:** Djoser + JWT (JSON Web Tokens)
 - **Filtering:** `django-filter`
 - **Documentation:** Swagger/Spectacular (`/api/schema/swagger-ui/`)
+- **Real-time:** Django Channels + Redis (Daphne ASGI)
 
 ### 🎨 Frontend
 - **Framework:** Next.js 14 (App Router)
@@ -21,54 +22,32 @@
 
 ---
 
-## 3. Current Progress ✅
+## 3. Completed Progress ✅
 
-### A. Backend Architecture
-- [x] **Database Models:**
-  - `CustomUser`: Roles (Doctor, Patient, Admin).
-  - `DoctorProfile`: Bio, Fee, Experience, Specialization (FK).
-  - `PatientProfile`: DOB, Phone.
-  - `Specialization`: Category names.
-  - `Availability`: Time slots (`is_booked` boolean).
-  - `Appointment`: Link between Patient, Doctor, and Time Slot.
-- [x] **APIs:**
-  - `/api/doctors/`: List of doctors with nested data.
-  - `/api/doctors/?specialization=ID`: Functional filtering.
-  - `/api/clinics/specialties/`: List of categories.
-  - `/api/appointments/`: POST to create bookings.
+### A. Backend Architecture [DONE]
+- [x] **Database Models:** Cases for Roles, Profiles, Appointments, etc.
+- [x] **APIs:** Optimized endpoints for filtering, listing, and booking.
+- [x] **Security:** Strict Object-Level Permissions and RBAC. [DONE]
+- [x] **Real-time:** Notification system using WebSockets. [DONE]
 
-### B. Frontend Implementation
-- [x] **Dynamic Doctor Listing:** Fetches data from API.
-- [x] **Reactive Filtering:** Sidebar filters update URL params and re-fetch.
-- [x] **Doctor Details Page:** Dynamic routing (`/doctors/[id]`).
-- [x] **Booking Calendar:** UI for selecting dates and slots.
+### B. Frontend Implementation [DONE]
+- [x] **Dynamic Doctor Listing & Filtering:** Reactivity via URL params.
+- [x] **User Dashboards:** Patient and Doctor specific views with statistics.
+- [x] **Profile Management:** Standalone setting page with Cloudinary upload support. [DONE]
 
 ---
 
-## 4. Roadmap & Pending Requirements 🚀
+## 4. Roadmap Status 🚀
 
-### Phase 1: User Dashboards (High Priority)
-- **Patient Dashboard** (`/dashboard/patient`):
-  - List of booked appointments.
-  - Status tracking (Pending -> Confirmed).
-  - Cancellation logic (Toggling `is_booked=False` in Backend).
-- **Doctor Dashboard** (`/dashboard/doctor`): [DONE]
-  - List of all upcoming appointments (Active/Pending/Confirmed).
-  - Practice statistics: Active Appointments & Total Revenue.
-  - Manage appointment status (Mark as Complete).
-  - Manage availability slots directly from UI. [DONE]
-  - Automated cleanup of expired unbooked slots. [DONE]
-  - Auto-cancellation of expired pending requests. [DONE]
+### Phase 1: User Dashboards [DONE]
+- Refined Dashboard experience for both User roles.
 
-### Phase 2: Authentication & Security
-- **Profile Completion:** Redirect new users to fill profiles. [DONE]
-- **Role-Based Access (RBAC):** Restrict booking to Patients and schedule viewing to Doctors. [DONE]
-- **Protected Routes:** Frontend middleware for `/dashboard/**`. [DONE]
-- **Date Integrity:** Local timezone handling for all calendar interactions. [DONE]
+### Phase 2: Authentication & Security [DONE]
+- RBAC and Protected Routes.
 
-### Phase 3: Refinement
-- **Image Handling:** Cloudinary or S3 for profile pictures.
-- **Notifications:** UI alerts/toasts for successful bookings.
+### Phase 3: Refinement [DONE]
+- **Image Handling:** Cloudinary integration for profile pictures. [DONE]
+- **Notifications:** Real-time WebSocket alerts for booking events. [DONE]
 
 ---
 
@@ -78,17 +57,13 @@
 | :--- | :--- | :--- |
 | **Doctor List** | `/api/doctors/` | `GET` |
 | **Filtered List** | `/api/doctors/?specialization=ID` | `GET` |
-| **Specialties** | `/api/clinics/specialties/` | `GET` |
 | **Book Appointment** | `/api/appointments/` | `POST` |
-| **User Profile** | `/api/djoser/users/me/` | `GET` |
+| **User Profile** | `/api/auth/user/` | `GET` |
+| **WS Alerts** | `ws/notifications/` | `WS` |
 
 ---
 
-## 6. Development Guidelines 🤖
-
-1.  **Sync First:** Always check `CatoDoc_Master_Sync.md` before writing code.
-2.  **Naming Convention:**
-    - **Backend:** `snake_case`
-    - **Frontend:** `camelCase`
-3.  **UI Consistency:** Use **Navy Blue** (`#001f3f`) for primary actions.
-4.  **Error Handling:** Always implement **Loading Skeletons** and **Error Toast** notifications.
+## 6. Project Health 🏆
+- **Overall Status:** COMPLETED
+- **System Stability:** Verified with security audits and migration checks.
+- **Documentation:** CatoDoc_Master_Sync.md (Updated 2026-04-06).

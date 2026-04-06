@@ -38,4 +38,7 @@ urlpatterns = [
     
     # Appointments
     path('api/', include('apps.appointments.urls')),
+    
+    # Notifications
+    path('api/notifications/', include('apps.notifications.urls')),
 ]

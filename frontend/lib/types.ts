@@ -9,7 +9,7 @@ export interface User {
   role: UserRole
   first_name?: string
   last_name?: string
-  image?: string
+  profile_picture?: string
   has_profile: boolean
   profile_id?: number
 }
@@ -27,7 +27,7 @@ export interface DoctorProfile {
   consultation_fee: string | number
   years_of_experience: number
   clinic_address: string
-  image?: string 
+  profile_picture?: string 
   rating?: number 
 }
 
@@ -36,7 +36,7 @@ export interface PatientProfile {
   user: User
   date_of_birth?: string
   phone_number?: string
-  image?: string
+  profile_picture?: string
   medical_history?: string
 }
 
@@ -46,7 +46,7 @@ export interface ProfileUpdateData {
   last_name?: string
   bio?: string
   phone_number?: string
-  image?: File | null
+  profile_picture?: File | null
 }
 
 export interface Availability {
@@ -106,6 +106,14 @@ export interface ApiError {
   message: string
   errors?: Record<string, string[]>
   status?: number
+}
+
+export interface AppNotification {
+  id: number
+  message: string
+  type: string
+  is_read: boolean
+  created_at: string
 }
 
 // Navigation item type for role-based navbar
