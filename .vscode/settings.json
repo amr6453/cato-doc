@@ -1,5 +1,0 @@
-{
-  "python.locator": "js",
-  "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/Scripts/python.exe",
-  "python.experiments.optOutFrom": ["pythonNativeLocator"]
-}
