@@ -11,6 +11,7 @@ import {
     SheetContent, 
     SheetTrigger 
 } from '@/components/ui/sheet'
+import { NotificationBell } from './notification-bell'
 import { SidebarContent } from './sidebar'
 
 export function MobileHeader() {
@@ -40,14 +41,11 @@ export function MobileHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full relative bg-slate-50">
-            <Bell className="h-5 w-5 text-slate-500" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 border-2 border-white" />
-        </Button>
+        <NotificationBell />
         <Link href={user?.role === 'DOCTOR' ? '/dashboard/doctor/settings' : '/dashboard/patient/settings'}>
             <div className="h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden">
-                {user?.image ? (
-                    <img src={user.image} alt="" className="h-full w-full object-cover" />
+                {user?.profile_picture ? (
+                    <img src={user.profile_picture} alt="" className="h-full w-full object-cover" />
                 ) : (
                     <User className="h-5 w-5 text-blue-600" />
                 )}

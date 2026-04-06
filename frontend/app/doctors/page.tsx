@@ -276,9 +276,9 @@ export default function DoctorsPage() {
                 return (
                   <Card key={doctor.id} className="overflow-hidden hover:shadow-md transition-shadow border-gray-100 flex flex-col h-full">
                     <div className="relative h-48 w-full bg-gray-100 shrink-0">
-                      {doctor.image ? (
+                      {doctor.profile_picture ? (
                         <Image
-                          src={doctor.image}
+                          src={doctor.profile_picture}
                           alt={doctorName}
                           fill
                           className="object-cover"

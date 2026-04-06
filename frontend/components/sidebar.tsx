@@ -28,6 +28,7 @@ import {
   SheetHeader,
   SheetTitle
 } from '@/components/ui/sheet'
+import { NotificationBell } from './notification-bell'
 
 export interface SidebarItem {
   title: string
@@ -100,12 +101,12 @@ export function SidebarContent({ className, onItemClick, isCollapsed }: { classN
         {!isCollapsed && (
             <div className="flex items-center gap-3 p-3 mb-4 bg-white rounded-[20px] shadow-sm border border-slate-100 ring-1 ring-slate-200/50 overflow-hidden">
                 <Avatar className="h-10 w-10 border-2 border-slate-50 shrink-0">
-                    <AvatarImage src={user?.image} />
-                    <AvatarFallback className="bg-blue-600 text-white font-black uppercase text-xs">
-                        {user?.username?.substring(0, 2)}
+                    <AvatarImage src={user?.profile_picture} />
+                    <AvatarFallback className="bg-blue-50 text-[#001f3f] font-black uppercase text-xs">
+                        {user?.first_name ? user.first_name[0] : (user?.username?.substring(0, 2) || <User className="w-4 h-4" />)}
                     </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 flex-1">
                     <p className="text-xs font-black text-[#001f3f] truncate leading-none mb-1">
                         {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username}
                     </p>
@@ -113,6 +114,8 @@ export function SidebarContent({ className, onItemClick, isCollapsed }: { classN
                         {user?.role}
                     </p>
                 </div>
+                {/* Notification Bell */}
+                <NotificationBell />
             </div>
         )}
 

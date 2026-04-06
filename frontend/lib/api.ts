@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosInstance } from 'axios'
-import type { AuthResponse, LoginCredentials, RegisterData, User, ApiError, DoctorProfile, PatientProfile, Specialization, Appointment, Availability } from './types'
+import type { AuthResponse, LoginCredentials, RegisterData, User, ApiError, DoctorProfile, PatientProfile, Specialization, Appointment, Availability, AppNotification } from './types'
 
 // API base URL - Django backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
@@ -284,6 +284,25 @@ export const appointmentsApi = {
       params: { date }
     })
     return response.data
+  }
+}
+
+// Notifications API
+export const notificationsApi = {
+  // Get all notifications for current user
+  getNotifications: async (): Promise<AppNotification[]> => {
+    const response = await api.get<AppNotification[]>('/notifications/')
+    return response.data
+  },
+
+  // Mark a single notification as read
+  markAsRead: async (id: number): Promise<void> => {
+    await api.patch(`/notifications/${id}/`, { is_read: true })
+  },
+
+  // Mark all as read
+  markAllAsRead: async (): Promise<void> => {
+    await api.post('/notifications/mark-all-read/')
   }
 }
 

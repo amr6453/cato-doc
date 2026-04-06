@@ -237,7 +237,7 @@ export default function DoctorDetailsPage() {
           <Card className="border-none shadow-none bg-transparent">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                <AvatarImage src={doctor.image || fallbackImage} alt={doctorName} className="object-cover" />
+                <AvatarImage src={doctor.profile_picture || fallbackImage} alt={doctorName} className="object-cover" />
                 <AvatarFallback>{doctor.user.username.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="space-y-2">
